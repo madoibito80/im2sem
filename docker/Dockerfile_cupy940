@@ -1,0 +1,59 @@
+FROM nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
+SHELL ["/bin/bash", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+	apt-get install tzdata -y
+
+RUN apt-get install git -y
+
+# pyenv install
+RUN git clone git://github.com/yyuu/pyenv.git ~/.pyenv && \
+	echo export PYENV_ROOT=$HOME/.pyenv >> ~/.bash_profile && \
+	source ~/.bash_profile && \
+	echo export PATH=$PYENV_ROOT/bin:$PATH >> ~/.bash_profile && \
+	source ~/.bash_profile && \
+	echo eval "$(pyenv init -)" >> ~/.bash_profile
+
+
+RUN apt-get install make build-essential libssl-dev zlib1g-dev -y
+RUN apt-get install libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm -y
+RUN apt-get install libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev -y
+
+
+# python install
+RUN source ~/.bash_profile && \
+	pyenv install 3.8.5 && \
+	pyenv global 3.8.5
+
+# ENV PYENV_ROOT /root/.pyenv
+# ENV PATH $PYENV_ROOT/bin:$PATH
+ENV PATH /root/.pyenv/versions/3.8.5/bin:$PATH
+
+RUN pip install --upgrade pip
+
+
+# Python libs install
+RUN pip install cupy-cuda114 && \
+    pip install chainer && \
+    pip install pillow && \
+    pip install matplotlib && \
+    pip install pybullet && \
+    pip install gym
+
+# ViZDoom install; https://github.com/mwydmuch/ViZDoom#python-quick-start
+RUN apt-get install build-essential zlib1g-dev libsdl2-dev libjpeg-dev \
+nasm tar libbz2-dev libgtk2.0-dev cmake git libfluidsynth-dev libgme-dev \
+libopenal-dev timidity libwildmidi-dev unzip -y
+
+RUN apt-get install libboost-all-dev -y
+RUN pip install vizdoom
+
+# others
+RUN pip install torch && \
+    pip install pyyaml && \
+    pip install optuna
+
+
+RUN pip install stable-baselines3==1.0 && \
+    pip install sb3-contrib==1.0
